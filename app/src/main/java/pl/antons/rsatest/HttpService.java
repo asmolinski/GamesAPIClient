@@ -39,11 +39,11 @@ public class HttpService extends IntentService {
         try {
             //Create url object from given string
             String urlstr = intent.getStringExtra(HttpService.URL);
-            URL url = new URL(urlstr);
+            java.net.URL url = new URL(urlstr);
             //Prepare connection
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             //set connection method
-            switch (intent.getIntExtra(HttpService.METHOD,1)){
+            switch (intent.getIntExtra(HttpService.METHOD, 1)) {
                 case HttpService.POST:
                     conn.setRequestMethod("POST");
                     break;
@@ -55,12 +55,12 @@ public class HttpService extends IntentService {
             }
             //Using RSA asynhronic sign for authorization request
             Config conf = new Config(getApplicationContext());
-            conn.setRequestProperty("PKEY", conf.getPublic().replace("\n",""));
-            conn.setRequestProperty("SIGN", conf.sign(urlstr).replace("\n",""));
+            conn.setRequestProperty("PKEY", conf.getPublic().replace("\n", ""));
+            conn.setRequestProperty("SIGN", conf.sign(urlstr).replace("\n", ""));
 
             //Add parameters to request
             String params = intent.getStringExtra(HttpService.PARAMS);
-            if(params!=null) {
+            if (params != null) {
                 conn.setDoOutput(true);
                 OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
                 writer.write(params);
@@ -75,7 +75,7 @@ public class HttpService extends IntentService {
 
             //Geting response Body only when connection is OK
             String response = "";
-            if(responseCode==200) {
+            if (responseCode == 200) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
                 //Convert response to single string
@@ -94,7 +94,7 @@ public class HttpService extends IntentService {
             PendingIntent reply = intent.getParcelableExtra(HttpService.RETURN);
             reply.send(this, responseCode, returns);
 
-        }catch (Exception ex){
+        } catch (Exception ex) {
             //If connection error occured - show Exception message in logCat
             Log.d("CONNERROR", ex.toString());
         }
