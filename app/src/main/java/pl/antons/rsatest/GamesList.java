@@ -8,7 +8,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -51,26 +50,26 @@ public class GamesList extends AppCompatActivity {
         refreshGameList();
 
         //Implement onClick Action - chose game for play
-        ListView list = (ListView)findViewById(R.id.listView);
+        ListView list = (ListView) findViewById(R.id.listView);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 //Seting loading spinner (while reciving message)
-                ProgressBar spinner = (ProgressBar)findViewById(R.id.progressBar1);
+                ProgressBar spinner = (ProgressBar) findViewById(R.id.progressBar1);
                 spinner.setVisibility(View.VISIBLE);
                 //Get info about chosen game
-                String game_id = arg0.getItemAtPosition(arg2).toString().replace("ID: ","");
+                String game_id = arg0.getItemAtPosition(arg2).toString().replace("ID: ", "");
 
                 //Creating intent for custom Service
                 Intent intencja = new Intent(
                         getApplicationContext(),
                         HttpService.class);
                 //Creating PendingIntent - for getting list back
-                PendingIntent pendingResult = createPendingResult(HttpService.GAME_INFO, new Intent(),0);
+                PendingIntent pendingResult = createPendingResult(HttpService.GAME_INFO, new Intent(), 0);
                 //Set data - URL
-                if(game == R.id.inRow){
-                    intencja.putExtra(HttpService.URL, HttpService.LINES+game_id);
-                }else{
+                if (game == R.id.inRow) {
+                    intencja.putExtra(HttpService.URL, HttpService.LINES + game_id);
+                } else {
                     //TODO - geting ticTacToe games list
                 }
                 //Set data - method of request
@@ -87,7 +86,7 @@ public class GamesList extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intencja=null;
+                Intent intencja = null;
                 switch (game) {
                     case R.id.inRow:
                         intencja = new Intent(getApplicationContext(), inRow.class);
@@ -106,17 +105,17 @@ public class GamesList extends AppCompatActivity {
     }
 
     //Refreshing ListView with available games, geted from serwer (API)
-    public void refreshGameList(){
+    public void refreshGameList() {
         //Seting loading spinner (while reciving message)
-        ProgressBar spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        ProgressBar spinner = (ProgressBar) findViewById(R.id.progressBar1);
         spinner.setVisibility(View.VISIBLE);
         //Show a status Bar with info
         Snackbar.make(findViewById(R.id.main_list), getString(R.string.refresh), Snackbar.LENGTH_SHORT)
                 .setAction("Action", null).show();
 
         //Geting Layout elements for modyfication
-        ListView list = (ListView)findViewById(R.id.listView);
-        TextView emptyText = (TextView)findViewById(android.R.id.empty);
+        ListView list = (ListView) findViewById(R.id.listView);
+        TextView emptyText = (TextView) findViewById(android.R.id.empty);
 
 
         //Geting available games
@@ -125,11 +124,11 @@ public class GamesList extends AppCompatActivity {
                 getApplicationContext(),
                 HttpService.class);
         //Creating PendingIntent - for getting list back
-        PendingIntent pendingResult = createPendingResult(HttpService.GAMES_LIST, new Intent(),0);
+        PendingIntent pendingResult = createPendingResult(HttpService.GAMES_LIST, new Intent(), 0);
         //Set data - URL for choosen game
-        if(game == R.id.inRow){
+        if (game == R.id.inRow) {
             intencja.putExtra(HttpService.URL, HttpService.LINES);
-        }else{
+        } else {
             //TODO - geting ticTacToe games list
         }
         //Set data - method of request
@@ -142,9 +141,8 @@ public class GamesList extends AppCompatActivity {
 
     //When Service return games list
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if(requestCode==HttpService.GAMES_LIST) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == HttpService.GAMES_LIST) {
             //Hide loading spinner
             ProgressBar spinner = (ProgressBar) findViewById(R.id.progressBar1);
             spinner.setVisibility(View.GONE);
@@ -156,10 +154,9 @@ public class GamesList extends AppCompatActivity {
                 //Parse response as JSON
                 JSONObject response = new JSONObject(data.getStringExtra(HttpService.RESPONSE));
 
-                if(response.getInt("games_count")>0)
-                {
+                if (response.getInt("games_count") > 0) {
                     //hide message "no game"
-                    TextView no_game = (TextView)findViewById(R.id.empty);
+                    TextView no_game = (TextView) findViewById(R.id.empty);
                     no_game.setVisibility(View.GONE);
 
                     //get array of games from JSON
@@ -167,26 +164,26 @@ public class GamesList extends AppCompatActivity {
                     ArrayList<String> items = new ArrayList<String>();
 
                     //Parse String list of games (for adapter)
-                    for(int i=0; i<response.getInt("games_count");i++){
+                    for (int i = 0; i < response.getInt("games_count"); i++) {
                         JSONObject game = games.getJSONObject(i);
-                        items.add("ID: "+game.getString("id"));
+                        items.add("ID: " + game.getString("id"));
                     }
 
                     //Set adapter to list
                     ArrayAdapter<String> gamesAdapter =
                             new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items);
-                    ListView list = (ListView)findViewById(R.id.listView);
+                    ListView list = (ListView) findViewById(R.id.listView);
                     list.setAdapter(gamesAdapter);
                 }//if "no game" do nothing
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        }else if(requestCode==HttpService.GAME_INFO){
+        } else if (requestCode == HttpService.GAME_INFO) {
             //Hide loading spinner
             ProgressBar spinner = (ProgressBar) findViewById(R.id.progressBar1);
             spinner.setVisibility(View.GONE);
 
-            if(game==R.id.inRow) {
+            if (game == R.id.inRow) {
                 //Create intent to start game 4inRow
                 Intent intencja = new Intent(getApplicationContext(), inRow.class);
 
@@ -220,7 +217,7 @@ public class GamesList extends AppCompatActivity {
                     //For JSON Object
                     ex.printStackTrace();
                 }
-            }else if(game==R.id.ticTac){
+            } else if (game == R.id.ticTac) {
                 //TODO - start chosen game for TicTacToe
             }
         }

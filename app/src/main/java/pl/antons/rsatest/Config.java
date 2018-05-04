@@ -29,6 +29,21 @@ public class Config extends SQLiteOpenHelper {
                 null, DATABASE_VERSION);
     }
 
+    //RSA key pair generation
+    public static KeyPair generateKeys() {
+        KeyPair keyPair = null;
+        try {
+            KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
+            //Set key length
+            keygen.initialize(512);
+            keyPair = keygen.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return keyPair;
+    }
+
     @Override //Creating new table config contains private and public key
     public void onCreate(SQLiteDatabase database) {
         String DATABASE_CREATE =
@@ -55,29 +70,30 @@ public class Config extends SQLiteOpenHelper {
     }
 
     //Getting private RSA key as PrivateKey object for async cryptography
-    private PrivateKey getPrivate(){
+    private PrivateKey getPrivate() {
         SQLiteDatabase db =
                 this.getReadableDatabase();
         Cursor cursor =
                 db.query("config",
-                        new String[] { "privKey",},
-                        null,null,
-                        null,null,
-                        null,null);
+                        new String[]{"privKey",},
+                        null, null,
+                        null, null,
+                        null, null);
         if (cursor != null)
             cursor.moveToFirst();
         //Convert bloob data into privateKey
-        PrivateKey privateKey=null;
+        PrivateKey privateKey = null;
         try {
             KeyFactory kf = KeyFactory.getInstance("RSA");
             privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(cursor.getBlob(0)));
-        }catch(Exception ex){}
+        } catch (Exception ex) {
+        }
         db.close();
         return privateKey;
     }
 
     //Method returns encrypt sent message with RSA private key
-    public String sign(String msg){
+    public String sign(String msg) {
         try {
             //Create object for crypt
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -85,12 +101,13 @@ public class Config extends SQLiteOpenHelper {
             //Convert encoded message into base64 format (for sending threw HTTP
             String sign = Base64.encodeToString(cipher.doFinal(msg.getBytes()), Base64.DEFAULT);
             return sign;
-        }catch(Exception ex){}
+        } catch (Exception ex) {
+        }
         return null;
     }
 
     //Get public Key string for veryfi sign
-    public String getPublic(){
+    public String getPublic() {
         try {
             //Get data String from database
             SQLiteDatabase db =
@@ -105,7 +122,8 @@ public class Config extends SQLiteOpenHelper {
                 cursor.moveToFirst();
             db.close();
             return cursor.getString(0);
-        }catch(Exception ex){ }
+        } catch (Exception ex) {
+        }
         return null;
     }
 
@@ -114,21 +132,6 @@ public class Config extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS config");
         onCreate(db);
-    }
-
-    //RSA key pair generation
-    public static KeyPair generateKeys() {
-        KeyPair keyPair = null;
-        try {
-            KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA");
-            //Set key length
-            keygen.initialize(512);
-            keyPair = keygen.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return keyPair;
     }
 
 }
