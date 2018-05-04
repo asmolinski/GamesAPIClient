@@ -2,8 +2,8 @@ package pl.antons.rsatest;
 
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,11 +47,11 @@ public class inRow extends AppCompatActivity {
         setContentView(R.layout.activity_in_row);
 
         //Geting actual game status, or 0
-        status=getIntent().getIntExtra(inRow.STATUS, inRow.NEW_GAME);
+        status = getIntent().getIntExtra(inRow.STATUS, inRow.NEW_GAME);
         //Geting actual game id, or 0
-        game_id=getIntent().getIntExtra(inRow.GAME_ID, inRow.NEW_GAME);
+        game_id = getIntent().getIntExtra(inRow.GAME_ID, inRow.NEW_GAME);
         //Geting player number, or 1
-        player=getIntent().getIntExtra(inRow.PLAYER, 1);
+        player = getIntent().getIntExtra(inRow.PLAYER, 1);
         //show appropriate message above game board
         hints(status);
 
@@ -59,14 +59,13 @@ public class inRow extends AppCompatActivity {
         GridView gv = (GridView) findViewById(R.id.gridView);
         //in inRowBoard adapter constructor we put History of Moves as initialization
         moves = getIntent().getStringExtra(inRow.MOVES);
-        gv.setAdapter(new inRowBoard(this,moves));
+        gv.setAdapter(new inRowBoard(this, moves));
         //Listner for clicking on element
         gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 //You can move only if Your turn (not Waiting Status)
-                if(status!=inRow.WAIT)
-                {
+                if (status != inRow.WAIT) {
                     //User cannot move
                     status = inRow.WAIT;
                     //Show hint about sending move
@@ -74,9 +73,9 @@ public class inRow extends AppCompatActivity {
 
                     //Getting game (inRowBoard Adapter)
                     GridView gv = (GridView) findViewById(R.id.gridView);
-                    inRowBoard game = (inRowBoard)gv.getAdapter();
+                    inRowBoard game = (inRowBoard) gv.getAdapter();
                     //Make Move
-                    if(game.add(arg3)!=null)
+                    if (game.add(arg3) != null)
                         gv.setAdapter(game);
                     else
                         hints(inRow.ERROR);
@@ -86,25 +85,24 @@ public class inRow extends AppCompatActivity {
                             getApplicationContext(),
                             HttpService.class);
                     //Creating PendingIntent - for response
-                    PendingIntent pendingResult = createPendingResult(HttpService.IN_ROW, new Intent(),0);
+                    PendingIntent pendingResult = createPendingResult(HttpService.IN_ROW, new Intent(), 0);
 
-                    if(game_id == inRow.NEW_GAME)
-                    {
+                    if (game_id == inRow.NEW_GAME) {
                         //new game
                         //Set data - URL
                         intencja.putExtra(HttpService.URL, HttpService.LINES);
                         //Set data - method of request
                         intencja.putExtra(HttpService.METHOD, HttpService.POST);
-                    }else{
+                    } else {
                         //existing game
                         //Set data - URL
-                        intencja.putExtra(HttpService.URL, HttpService.LINES+game_id);
+                        intencja.putExtra(HttpService.URL, HttpService.LINES + game_id);
                         //Set data - method of request
                         intencja.putExtra(HttpService.METHOD, HttpService.PUT);
                     }
 
                     //Set data - parameters
-                    intencja.putExtra(HttpService.PARAMS, "moves=" + moves + arg3 );
+                    intencja.putExtra(HttpService.PARAMS, "moves=" + moves + arg3);
                     //Set data - intent for result
                     intencja.putExtra(HttpService.RETURN, pendingResult);
                     //Start unBound Service in another Thread
@@ -116,27 +114,25 @@ public class inRow extends AppCompatActivity {
 
     //When Service return answer from server
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //Result moves
-        if(requestCode==HttpService.IN_ROW)
-        {
+        if (requestCode == HttpService.IN_ROW) {
             try {
                 JSONObject response = new JSONObject(data.getStringExtra(HttpService.RESPONSE));
                 if (resultCode == 200) {
                     //ok
-                    if(game_id==0)
+                    if (game_id == 0)
                         game_id = response.getInt("game_id");
 
                     //check game status
                     GridView gv = (GridView) findViewById(R.id.gridView);
-                    inRowBoard game = (inRowBoard)gv.getAdapter();
+                    inRowBoard game = (inRowBoard) gv.getAdapter();
                     int game_status = game.checkWin();
-                    if (game_status==0)
-                            //next turn
-                            hints(inRow.WAIT);
-                    else{
-                        if(game_status==player)
+                    if (game_status == 0)
+                        //next turn
+                        hints(inRow.WAIT);
+                    else {
+                        if (game_status == player)
                             //You win
                             hints(inRow.WIN);
                         else
@@ -144,12 +140,12 @@ public class inRow extends AppCompatActivity {
                             hints(inRow.LOSE);
                     }
 
-                } else{
+                } else {
                     //Network error
-                    if(resultCode==500)
+                    if (resultCode == 500)
                         hints(inRow.NETWORK_ERROR);
                     else
-                    //other error
+                        //other error
                         hints(inRow.ERROR);
                     //Show serwer error message
                     Log.d("DEBUG", response.getString("http_status"));
@@ -158,13 +154,13 @@ public class inRow extends AppCompatActivity {
                 Thread.sleep(5000);
                 refresh(null);
 
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 //Json handler error
                 hints(inRow.ERROR);
                 ex.printStackTrace();
             }
 
-        }else if(requestCode==HttpService.REFRESH){
+        } else if (requestCode == HttpService.REFRESH) {
             //Refresh board
             try {
                 //Parse response from server
@@ -173,36 +169,36 @@ public class inRow extends AppCompatActivity {
                 GridView gv = (GridView) findViewById(R.id.gridView);
                 //Create new board with geted moves
                 moves = response.getString("moves");
-                inRowBoard game = new inRowBoard(this,moves);
+                inRowBoard game = new inRowBoard(this, moves);
                 gv.setAdapter(game);
 
                 //check whose turn
-                if(response.getInt("status")==player){
-                    if(game.checkWin()==player) {
+                if (response.getInt("status") == player) {
+                    if (game.checkWin() == player) {
                         hints(inRow.WIN);
-                    }else if(game.checkWin()!=0){
+                    } else if (game.checkWin() != 0) {
                         hints(inRow.LOSE);
-                    }else {
+                    } else {
                         status = inRow.YOUR_TURN;
                         hints(status);
                     }
-                }else{
+                } else {
                     //Cal refresh again after 5sec, because it's not your turn
                     Thread.sleep(5000);
                     refresh(null);
                 }
 
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 //Json handler error
-               ex.printStackTrace();
+                ex.printStackTrace();
             }
         }
     }
 
     //Set status into TextView (Hint) from String Resource
-    private void hints(int status){
-        TextView hint = (TextView)findViewById(R.id.inRowHint);
-        switch(status){
+    private void hints(int status) {
+        TextView hint = (TextView) findViewById(R.id.inRowHint);
+        switch (status) {
             case inRow.YOUR_TURN:
                 hint.setText(getString(R.string.your_turn));
                 break;
@@ -239,15 +235,15 @@ public class inRow extends AppCompatActivity {
     }
 
     //Refresh game
-    public void refresh(MenuItem item){
+    public void refresh(MenuItem item) {
         //Creating intent for custom Service - sending request to serwer
         Intent intencja = new Intent(
                 getApplicationContext(),
                 HttpService.class);
         //Creating PendingIntent - for getting result
-        PendingIntent pendingResult = createPendingResult(HttpService.REFRESH, new Intent(),0);
+        PendingIntent pendingResult = createPendingResult(HttpService.REFRESH, new Intent(), 0);
         //Set data - URL
-        intencja.putExtra(HttpService.URL, HttpService.LINES+game_id);
+        intencja.putExtra(HttpService.URL, HttpService.LINES + game_id);
         //Set data - method of request
         intencja.putExtra(HttpService.METHOD, HttpService.GET);
         //Set data - intent for result
